@@ -11,6 +11,7 @@ source .venv/bin/activate
 
 deactivate
 ```
+
 ### Install Dependencies
 
 ```python
@@ -20,5 +21,7 @@ pip install -r requirements.txt
 ### Run Program
 
 ```python
-python3 learnverbs.py -h
+python3 learnverbs.py db/verbs.csv
+python3 learnverbs.py db/verbs_irregular.csv
+python3 learnverbs.py db/verbs_regular.csv
 ```
