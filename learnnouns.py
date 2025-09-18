@@ -12,6 +12,8 @@ BLUE = '\033[34m'
 YELLOW = '\033[33m'
 RESET = '\033[0m'
 
+SUCCESSES = 0
+FAILURES = 0
 
 def load_csv(file_path: str) -> List[Tuple[str]]:
     entries: List[Tuple[str]] = []
@@ -54,6 +56,7 @@ if __name__ == "__main__":
     # Load dataset
     dataset = load_csv(used_file)
     typed_words = set()
+    print(f"Loaded {len(dataset)} words from '{used_file}'.")
 
     while len(typed_words) != len(dataset):
         word = get_unique_word(dataset, typed_words)
@@ -62,10 +65,10 @@ if __name__ == "__main__":
         print(f"Bydeform: {GREEN}{lemma}{RESET} ({YELLOW}{eng}{RESET})")
 
         # Get user input
-        user_indefin = input('Ental Ubestemt (a): ')
-        user_definitive = input('Ental Bestemt (the): ')
-        user_pl_indefin = input('Flertal Ubestemt (some): ')
-        user_pl_defin = input('Flertal Bestemt (these): ')
+        user_indefin = input('Ental Ubestemt (a): ').strip()
+        user_definitive = input('Ental Bestemt (the): ').strip()
+        user_pl_indefin = input('Flertal Ubestemt (some): ').strip()
+        user_pl_defin = input('Flertal Bestemt (these): ').strip()
 
         # Mark this word as typed
         typed_words.add(word)
@@ -104,11 +107,14 @@ if __name__ == "__main__":
             print(f"{'Flertal Bestemt':<12}\t\t{GREEN}{user_pl_defin:<12}{RESET}\t{GREEN}{pl_defin:<12}{RESET}")
 
         # Determine output file based on success
+        used_file = "tmp/" + used_file[used_file.index('/') + 1:]
         if all([success_indefin, success_defin, success_pl_indefin, success_pl_defin]):
-            outputfile = used_file.replace('.csv', '_successful.csv').replace('db', 'tmp')
+            FAILURES += 1
+            outputfile = used_file.replace('.csv', '_successful.csv')
         else:
-            outputfile = used_file.replace('.csv', '_misspelled.csv').replace('db', 'tmp')
-        
+            SUCCESSES += 1
+            outputfile = used_file.replace('.csv', '_misspelled.csv')
+
         # Read existing rows (if any) to avoid duplicates
         existing_rows = set()
         file_has_content = (os.path.exists(outputfile) and os.path.getsize(outputfile) > 0)
@@ -139,4 +145,4 @@ if __name__ == "__main__":
                 writer.writerow(list(row))
         print()
 
-    print(f"Congratulations — you completed dataset of {len(dataset)} words " f"({used_file}).")
+    print(f"Successful answers: {SUCCESSES}, Missed answers: {FAILURES}")
