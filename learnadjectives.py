@@ -35,8 +35,8 @@ if __name__ == "__main__":
     parser.add_argument(
         'filename',
         nargs='?',
-        default='db/verbs.csv',
-        help='CSV file (default: verbs.csv)'
+        default='db/adjectives.csv',
+        help='CSV file (default: adjectives.csv)'
     )
 
     args = parser.parse_args()
@@ -57,90 +57,72 @@ if __name__ == "__main__":
     dataset = load_csv(used_file)
     typed_words = set()
     print(f"Loaded {len(dataset)} words from '{used_file}'.")
-
+    
     while len(typed_words) != len(dataset):
         word = get_unique_word(dataset, typed_words)
         last_column = len(word)
-        eng, stem, infi, present, past, perfekt = word[:last_column]
-        print(f"Udsagnsord: {GREEN}{infi}{RESET} ({YELLOW}{eng}{RESET})")
+        eng, pos, comp, superl = word[:last_column]
+        print(f"Tillægsord: {GREEN}{pos}{RESET} ({YELLOW}{eng}{RESET})")
 
         # Get user input
-        user_stem = input('Bydeform: ').strip()
-        user_present = input('Nutid: ').strip()
-        user_past = input('Datid: ').strip()
-        user_perfekt = input('Perfektum: ').strip()
+        user_comp = input('Comparative (more): ').strip()
+        user_superl = input('Superlative (most): ').strip()
 
         # Mark this word as typed
         typed_words.add(word)
         print()
 
-        success_imper = True
-        success_present = True
-        success_past = True
-        success_perfekt = True
+        success_comp = True
+        success_superl = True
 
         # Print results
-        print(f"{YELLOW}{infi:<12}{RESET} {'Dit Svar':<12} {'Rigtig Svar':<12}")
-        print("-" * 40)
-        if user_stem != stem:
-            print(f"{'Bydeform':<12} {RED}{user_stem:<12}{RESET} {GREEN}{stem:<12}{RESET}")
-            success_imper = False
+        print(f"{YELLOW}{pos:<12}{RESET}\t\t{'Dit Svar':<12}\t{'Rigtig Svar':<12}")
+        print("-" * 54)
+        if user_comp != comp:
+            print(f"{'Komparativ':<12}\t{RED}{user_comp:<12}{RESET}\t{GREEN}{comp:<12}{RESET}")
+            success_comp = False
         else:
-            print(f"{'Bydeform':<12} {GREEN}{user_stem:<12}{RESET} {GREEN}{stem:<12}{RESET}")
+            print(f"{'Komparativ':<12}\t{GREEN}{user_comp:<12}{RESET}\t{GREEN}{comp:<12}{RESET}")
 
-        if user_present != present:
-            print(f"{'Nutid':<12} {RED}{user_present:<12}{RESET} {GREEN}{present:<12}{RESET}")
-            success_present = False
+        if user_superl != superl:
+            print(f"{'Superlativ':<12}\t{RED}{user_superl:<12}{RESET}\t{GREEN}{superl:<12}{RESET}")
+            success_superl = False
         else:
-            print(f"{'Nutid':<12} {GREEN}{user_present:<12}{RESET} {GREEN}{present:<12}{RESET}")
-
-        if user_past != past:
-            print(f"{'Datid':<12} {RED}{user_past:<12}{RESET} {GREEN}{past:<12}{RESET}")
-            success_past = False
-        else:
-            print(f"{'Datid':<12} {GREEN}{user_past:<12}{RESET} {GREEN}{past:<12}{RESET}")
-
-        if user_perfekt != perfekt:
-            print(f"{'Perfektum':<12} {RED}{user_perfekt:<12}{RESET} {GREEN}{perfekt:<12}{RESET}")
-            success_perfekt = False
-        else:
-            print(f"{'Perfektum':<12} {GREEN}{user_perfekt:<12}{RESET} {GREEN}{perfekt:<12}{RESET}")
+            print(f"{'Superlativ':<12}\t{GREEN}{user_superl:<12}{RESET}\t{GREEN}{superl:<12}{RESET}")
 
         # Determine output file based on success
         used_file = "tmp/" + used_file[used_file.index('/') + 1:]
-        if all([success_imper, success_present, success_past, success_perfekt]):
+        if all([success_comp, success_superl]):
             FAILURES += 1
-            misspells = used_file.replace('.csv', '_successful.csv')
+            outputfile = used_file.replace('.csv', '_successful.csv')
         else:
             SUCCESSES += 1
-            misspells = used_file.replace('.csv', '_misspelled.csv')
+            outputfile = used_file.replace('.csv', '_misspelled.csv')
 
         # Read existing rows (if any) to avoid duplicates
         existing_rows = set()
-        file_has_content = (os.path.exists(misspells) and os.path.getsize(misspells) > 0)
+        file_has_content = (os.path.exists(outputfile) and os.path.getsize(outputfile) > 0)
         if file_has_content:
-            with open(misspells, mode='r', encoding='utf-8') as rf:
+            with open(outputfile, mode='r', encoding='utf-8') as rf:
                 rdr = csv.reader(rf)
                 next(rdr, None)  # skip header
                 for r in rdr:
                     existing_rows.add(tuple(r))
 
-        row = (eng, infi, stem, present, past, perfekt)
+        row = (eng, pos, comp, superl)
         if row not in existing_rows:
             # Write header only when file doesn't exist or is empty
             write_header = not file_has_content
 
             # Append new missed row
-            with open(misspells, mode='a', newline='', encoding='utf-8') as file:
+            with open(outputfile, mode='a', newline='', encoding='utf-8') as file:
                 writer = csv.writer(file)
                 if write_header:
                     writer.writerow([
                         "English",
-                        "Bydeform",
-                        "Navneform",
-                        "Nutid",
-                        "Datid",
-                        "Perfektum",
+                        "Positiv",
+                        "Komparativ",
+                        "Superlativ"
                     ])
                 writer.writerow(list(row))
         print()
