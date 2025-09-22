@@ -12,8 +12,10 @@ BLUE = '\033[34m'
 YELLOW = '\033[33m'
 RESET = '\033[0m'
 
-SUCCESSES = 0
-FAILURES = 0
+successes = 0
+failures = 0
+misspelled_words = []
+
 
 def load_csv(file_path: str) -> List[Tuple[str]]:
     entries: List[Tuple[str]] = []
@@ -109,10 +111,11 @@ if __name__ == "__main__":
         # Determine output file based on success
         used_file = "tmp/" + used_file[used_file.index('/') + 1:]
         if all([success_indefin, success_defin, success_pl_indefin, success_pl_defin]):
-            FAILURES += 1
+            successes += 1
             outputfile = used_file.replace('.csv', '_successful.csv')
         else:
-            SUCCESSES += 1
+            failures += 1
+            misspelled_words.append(lemma)
             outputfile = used_file.replace('.csv', '_misspelled.csv')
 
         # Read existing rows (if any) to avoid duplicates
@@ -145,4 +148,6 @@ if __name__ == "__main__":
                 writer.writerow(list(row))
         print()
 
-    print(f"Successful answers: {SUCCESSES}, Missed answers: {FAILURES}")
+    print(f"Successful answers: {successes}")
+    print(f"Missed answers: {failures}")
+    print(f"Misspelled words: {', '.join(misspelled_words)}")
