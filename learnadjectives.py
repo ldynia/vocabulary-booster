@@ -64,9 +64,10 @@ if __name__ == "__main__":
         word = get_unique_word(dataset, typed_words)
         last_column = len(word)
         eng, pos, comp, superl = word[:last_column]
-        print(f"Tillægsord: {GREEN}{pos}{RESET} ({YELLOW}{eng}{RESET})")
+        print(f"Tillægsord: {YELLOW}{eng}{RESET}")
 
         # Get user input
+        user_pos = input('Positiv: ').strip()
         user_comp = input('Comparative (more): ').strip()
         user_superl = input('Superlative (most): ').strip()
 
@@ -74,12 +75,20 @@ if __name__ == "__main__":
         typed_words.add(word)
         print()
 
+        success_pos = True
         success_comp = True
         success_superl = True
 
         # Print results
         print(f"{YELLOW}{pos:<12}{RESET}\t\t{'Dit Svar':<12}\t{'Rigtig Svar':<12}")
         print("-" * 54)
+
+        if user_pos != pos:
+            print(f"{'Positiv':<12}\t{RED}{user_pos:<12}{RESET}\t{GREEN}{pos:<12}{RESET}")
+            success_pos = False
+        else:
+            print(f"{'Positiv':<12}\t{GREEN}{user_pos:<12}{RESET}\t{GREEN}{pos:<12}{RESET}")
+
         if user_comp != comp:
             print(f"{'Komparativ':<12}\t{RED}{user_comp:<12}{RESET}\t{GREEN}{comp:<12}{RESET}")
             success_comp = False
@@ -94,7 +103,7 @@ if __name__ == "__main__":
 
         # Determine output file based on success
         used_file = "tmp/" + used_file[used_file.index('/') + 1:]
-        if all([success_comp, success_superl]):
+        if all([success_pos, success_comp, success_superl]):
             successes += 1
             outputfile = used_file.replace('.csv', '_successful.csv')
         else:
